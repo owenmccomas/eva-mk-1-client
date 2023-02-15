@@ -29,6 +29,7 @@ function AudioRecorder() {
 
   const stopRecording = () => {
     mediaRecorder.stop();
+    setAudioChunks([]);
   };
 
   const handleDataAvailable = (event) => {
