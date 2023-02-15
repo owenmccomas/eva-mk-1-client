@@ -1,20 +1,50 @@
-import './eva.css'
 import React, { useState } from 'react';
+import './eva.css'
 
 function AudioRecorder() {
   const [isRecording, setIsRecording] = useState(false);
+  const [audioChunks, setAudioChunks] = useState([]);
+  const [mediaRecorder, setMediaRecorder] = useState(null);
 
   const handleRecordClick = () => {
+    if (isRecording) {
+      stopRecording();
+    } else {
+      startRecording();
+    }
     setIsRecording(!isRecording);
-    // TODO: implement logic for recording audio here
   };
 
+  const startRecording = async () => {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    if (!mediaRecorder) {
+      const recorder = new MediaRecorder(stream);
+      recorder.addEventListener('dataavailable', handleDataAvailable);
+      recorder.start();
+      setMediaRecorder(recorder);
+    } else {
+      mediaRecorder.start();
+    }
+  };
+
+  const stopRecording = () => {
+    mediaRecorder.stop();
+  };
+
+  const handleDataAvailable = (event) => {
+    if (event.data.size > 0) {
+      setAudioChunks((chunks) => [...chunks, event.data]);
+    }
+  };
+
+  const audioURL = URL.createObjectURL(new Blob(audioChunks));
+
   return (
-    <div>
+    <div className="container">
       <button onClick={handleRecordClick}>
-        {isRecording ? 'Stop Talking' : 'Start Talking'}
+        {isRecording ? 'Stop Recording' : 'Start Recording'}
       </button>
-      <p>Text output goes here</p>
+      <audio src={audioURL} controls />
     </div>
   );
 }
